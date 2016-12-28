@@ -1,43 +1,117 @@
-# -*-coding=utf-8-*-
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import re, os, urllib, sys, socket, string, time
 
 reload(sys)
-sys.setdefaultencoding('utf-8')
+sys.setdefaultencoding('utf-8')  # Set utf-8 encoding, ignore IDE error promote
 
 
 def getHtml(url):  # 获取网页源代码
+    '''
+    Ger website source context
+    :param url: website url
+    :return: the source content (String)
+    '''
     page = urllib.urlopen(url)
-    htmlText = page.read()
-    return htmlText
+    htmlSource = page.read()
+    return htmlSource
 
 
-def getVocabularyList(htmlText):  #
+def getVocabularyList(htmlSource):  # 获取列表中的单词
+    '''
+    Get word list from website source file
+    :param htmlSource: the source content
+    :return: list of word (list)
+    '''
     reg = r'lang="en" word="([^\s]*?)"'
     mre = re.compile(reg)
-    picUrl = re.findall(mre, htmlText)
-    return picUrl
+    wordList = re.findall(mre, htmlSource)
+    return wordList
 
 
-def getVocabularyDefine(htmlText):  #
+def getVocabularyChineseDefineList(wordList):  # 获取单词列表的词典翻译
+    '''
+    Get whole word translation
+    :param wordList: the English word list
+    :return: Native translation list
+    '''
+    nativeWordList = []
+    print "Total " + str(len(wordList)) + " Words"
+    i = 1
+    for word in wordList:
+        if (i < 2000):
+            nativeWordList.append(getVocabularyChineseDefine(word))
+        else:
+            nativeWordList.append("!!!!!")
+        print str(i) + " word translated...  "
+        print wordList[i - 1] + "  " + nativeWordList[i - 1]
+        i = i + 1
+    return nativeWordList
+
+
+def getVocabularyChineseDefine(word):  # 获取单个单词的词典翻译,尽量少重复调用，防止封IP，
+    # 如果网络不好请分段下载,可能有道翻译做了根据IP跳转，所以国外服务器不能跑啊
+    '''
+    Get single word translation from youdao
+    :param word: English word
+    :return:  native translation (String)
+    '''
+    bingBase = 'http://cn.bing.com/dict/search?q='
+    reg = r'网络释义：(.*?)" \/>'
+    mre = re.compile(reg)
+    nativeWord = re.findall(mre, getHtml(bingBase + word))
+    if (len(nativeWord) > 0):
+        nativeWord = nativeWord[0]
+    else:
+        nativeWord = " "
+    return nativeWord
+
+
+def getVocabularyDefine(htmlSource):  # 获取列表中单词的定义
+    '''
+    Get english define from list
+    :param htmlSource: the source content
+    :return: word define list (list)
+    '''
     reg = r'<div class="definition">(.*?)<\/div>'
     mre = re.compile(reg)
-    picUrl = re.findall(mre, htmlText)
-    return picUrl
+    wordDefineList = re.findall(mre, htmlSource)
+    return wordDefineList
 
 
-def getVocabularyExample(htmlText):  #
+def getVocabularyExample(htmlSource):  # 获取单词的例句
+    '''
+    Get english sentences from list
+    :param htmlSource: the source content
+    :return: word sentence list (list)
+    '''
     reg = r'<div class="example">([\s\S]*?)<\/div>'
     mre = re.compile(reg)
-    picUrl = re.findall(mre, htmlText)
-    newList =[]
+    picUrl = re.findall(mre, htmlSource)
+    sentenceList = []
     for str in picUrl:
-        newList.append(str.replace("<strong>","").replace("</strong>","").replace("<br>","").replace("\n"," "))
-    return newList
+        str = str.replace("<strong>", "").replace("</strong>", "") \
+            .replace("<br>", "").replace("\n", " ") \
+            .replace("&nbsp;", " ") \
+            .replace("\xe2\x80\x94", "") \
+            # .replace("\x9c", "").replace("\x9d", "");
+        str = re.sub('<a href.*?<\/a>', '', str)
+        sentenceList.append(str)
+    return sentenceList
+
+
+def printToFile():
+    for i in range(20):
+        f = open("WordList " + str(i * 50 + 1) + "~" + str((i + 1) * 50), "w+")
+        for j in range(50):
+            f.write(vocabularyList[i * 50 + j] + "&&"
+                    + nativeList[i * 50 + j] + " " + vocabularyDefine[i * 50 + j]
+                    + " --- " + vocabularyExample[i * 50 + j] + "\n")
 
 
 vocabularyURL = "https://www.vocabulary.com/lists/52473"
 
-# textInfo = getHtml(vocabularyURL);
+# textInfo = getHtml(vocabularyURL);   # 网络太慢，直接拷贝网站源代码吧
 textInfo = '''
 
 
@@ -18656,24 +18730,33 @@ Module.after(['params','jquery'],function() {
 
 </html>
 '''
-print  textInfo
+# print  textInfo
 
 print "----------------------------------------------------------------------------"
 
 vocabularyList = getVocabularyList(textInfo);
-print vocabularyList
-print len(vocabularyList)
+# print vocabularyList
+# print len(vocabularyList)
+
+print "----------------------------------------------------------------------------"
+
+nativeList = getVocabularyChineseDefineList(vocabularyList)
+# for nativeWord in nativeList:
+#     print unicode(nativeWord).encode('utf-8')
 
 print "----------------------------------------------------------------------------"
 
 vocabularyDefine = getVocabularyDefine(textInfo);
-print vocabularyDefine
-print len(vocabularyDefine)
+# print vocabularyDefine
+# print len(vocabularyDefine)
 
 print "----------------------------------------------------------------------------"
 
 vocabularyExample = getVocabularyExample(textInfo);
-print vocabularyExample
-print len(vocabularyExample)
+# print vocabularyExample
+# print len(vocabularyExample)
 
 print "----------------------------------------------------------------------------"
+
+printToFile()
+print "Complete!!!"
