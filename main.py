@@ -1,9 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import re, os, urllib, sys, socket, string, time
-
-reload(sys)
-sys.setdefaultencoding('utf-8')  # Set utf-8 encoding, ignore IDE error promote
+import re
+from urllib import request
 
 
 def getHtml(url):  # 获取网页源代码
@@ -12,9 +10,9 @@ def getHtml(url):  # 获取网页源代码
     :param url: website url
     :return: the source content (String)
     '''
-    page = urllib.urlopen(url)
-    htmlSource = page.read()
-    return htmlSource
+    with request.urlopen(url) as f:
+        data = f.read()
+    return data.decode('utf-8')
 
 
 def getVocabularyList(htmlSource):  # 获取列表中的单词
@@ -36,15 +34,15 @@ def getVocabularyChineseDefineList(wordList):  # 获取单词列表的词典翻�
     :return: Native translation list
     '''
     nativeWordList = []
-    print "Total " + str(len(wordList)) + " Words"
+    print ("Total " + str(len(wordList)) + " Words")
     i = 1
     for word in wordList:
         if (i < 2000):
             nativeWordList.append(getVocabularyChineseDefine(word))
         else:
             nativeWordList.append("!!!!!")
-        print str(i) + " word translated...  "
-        print wordList[i - 1] + "  " + nativeWordList[i - 1]
+        print (str(i) + " word translated...  ")
+        print (wordList[i - 1] + "  " + nativeWordList[i - 1])
         i = i + 1
     return nativeWordList
 
@@ -18732,31 +18730,31 @@ Module.after(['params','jquery'],function() {
 '''
 # print  textInfo
 
-print "----------------------------------------------------------------------------"
+print ("----------------------------------------------------------------------------")
 
-vocabularyList = getVocabularyList(textInfo);
+vocabularyList = getVocabularyList(textInfo)
 # print vocabularyList
 # print len(vocabularyList)
 
-print "----------------------------------------------------------------------------"
+print ("----------------------------------------------------------------------------")
 
 nativeList = getVocabularyChineseDefineList(vocabularyList)
 # for nativeWord in nativeList:
 #     print unicode(nativeWord).encode('utf-8')
 
-print "----------------------------------------------------------------------------"
+print ("----------------------------------------------------------------------------")
 
-vocabularyDefine = getVocabularyDefine(textInfo);
+vocabularyDefine = getVocabularyDefine(textInfo)
 # print vocabularyDefine
 # print len(vocabularyDefine)
 
-print "----------------------------------------------------------------------------"
+print ("----------------------------------------------------------------------------")
 
-vocabularyExample = getVocabularyExample(textInfo);
+vocabularyExample = getVocabularyExample(textInfo)
 # print vocabularyExample
 # print len(vocabularyExample)
 
-print "----------------------------------------------------------------------------"
+print ("----------------------------------------------------------------------------")
 
 printToFile()
-print "Complete!!!"
+print ("Complete!!!")
