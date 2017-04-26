@@ -57,12 +57,12 @@ def getVocabularyChineseDefine(word):  # 获取单个单词的词典翻译,尽�
     bingBase = 'http://cn.bing.com/dict/search?q='
     reg = r'网络释义：(.*?)" \/>'
     mre = re.compile(reg)
-    nativeWord = re.findall(mre, getHtml(bingBase + word))
-    if (len(nativeWord) > 0):
-        nativeWord = nativeWord[0]
+    chineseWord = re.findall(mre, getHtml(bingBase + word))
+    if (len(chineseWord) > 0):
+        chineseWord = chineseWord[0]
     else:
-        nativeWord = " "
-    return nativeWord
+        chineseWord = " "
+    return chineseWord
 
 
 def getVocabularyDefine(htmlSource):  # 获取列表中单词的定义
@@ -103,13 +103,14 @@ def printToFile():
         f = open("WordList " + str(i * 50 + 1) + "~" + str((i + 1) * 50), "w+")
         for j in range(50):
             f.write(vocabularyList[i * 50 + j] + "&&"
-                    + nativeList[i * 50 + j] + " " + vocabularyDefine[i * 50 + j]
-                    + " --- " + vocabularyExample[i * 50 + j] + "\n")
+                    + chineseWordList[i * 50 + j] + " " + vocabularyNativeDefine[i * 50 + j]
+                    # + " --- " + vocabularyExample[i * 50 + j]
+                    + "\n")
 
 
 vocabularyURL = "https://www.vocabulary.com/lists/52473"
 
-# textInfo = getHtml(vocabularyURL);   # 网络太慢，直接拷贝网站源代码吧
+# textInfo = getHtml(vocabularyURL);   # 网络太慢又被墙，直接拷贝网站源代码吧
 textInfo = '''
 
 
@@ -18738,13 +18739,13 @@ vocabularyList = getVocabularyList(textInfo)
 
 print ("----------------------------------------------------------------------------")
 
-nativeList = getVocabularyChineseDefineList(vocabularyList)
+chineseWordList = getVocabularyChineseDefineList(vocabularyList)
 # for nativeWord in nativeList:
 #     print unicode(nativeWord).encode('utf-8')
 
 print ("----------------------------------------------------------------------------")
 
-vocabularyDefine = getVocabularyDefine(textInfo)
+vocabularyNativeDefine = getVocabularyDefine(textInfo)
 # print vocabularyDefine
 # print len(vocabularyDefine)
 
